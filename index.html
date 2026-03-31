@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Portal do Baralho Cigano</title>
+
+<style>
+html, body {
+  margin:0;
+  padding:0;
+  background:#000;
+  color:#ffd86b;
+  font-family: Arial, sans-serif;
+  text-align:center;
+  height:100%;
+  overflow:hidden;
+}
+
+/* PROFUNDIDADE (vinheta) */
+.vignette{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:radial-gradient(circle at center, rgba(0,0,0,0) 40%, rgba(0,0,0,0.8) 100%);
+  z-index:3;
+}
+
+/* CANVAS */
+canvas{
+  position:fixed;
+  inset:0;
+  z-index:0;
+}
+
+/* CONTEÚDO */
+.container{
+  position:relative;
+  z-index:4;
+  padding:28px 18px;
+}
+
+h1{
+  font-size:30px;
+  letter-spacing:1px;
+  text-shadow:0 0 18px rgba(255,215,0,.9), 0 0 40px rgba(255,215,0,.5);
+  margin-bottom:6px;
+}
+
+p{
+  color:#e7d9a3;
+  margin-top:0;
+}
+
+/* INPUTS */
+input{
+  width:92%;
+  max-width:360px;
+  padding:14px;
+  margin:8px auto;
+  border-radius:26px;
+  border:none;
+  outline:none;
+  text-align:center;
+  font-size:16px;
+}
+
+/* BOTÕES */
+button{
+  width:92%;
+  max-width:360px;
+  padding:16px;
+  margin:10px auto;
+  border-radius:32px;
+  border:none;
+  font-size:16px;
+  cursor:pointer;
+}
+
+.botao-ouro{
+  background:linear-gradient(145deg,#ffe08a,#caa33a);
+  color:#000;
+  font-weight:bold;
+  box-shadow:0 0 22px rgba(255,215,0,.9), inset 0 0 10px rgba(255,255,255,.5);
+  transition:.25s;
+}
+.botao-ouro:hover{ transform:scale(1.04); }
+
+.botao-pagamento{
+  background:transparent;
+  color:#ffd86b;
+  border:1px solid #ffd86b;
+}
+
+/* PORTAL (anel + brilho) */
+.portal-wrap{
+  position:fixed;
+  top:50%; left:50%;
+  transform:translate(-50%,-50%) scale(0);
+  width:220px; height:220px;
+  border-radius:50%;
+  z-index:2;
+}
+
+.portal-wrap.ativo{
+  animation: abrir 1.8s forwards ease-out;
+}
+
+@keyframes abrir{
+  0%{ transform:translate(-50%,-50%) scale(0); opacity:0; }
+  40%{ opacity:1; }
+  100%{ transform:translate(-50%,-50%) scale(7.5); opacity:1; }
+}
+
+.portal-ring{
+  position:absolute; inset:0;
+  border-radius:50%;
+  border:3px solid rgba(255,215,0,.9);
+  box-shadow:
+    0 0 30px rgba(255,215,0,.9),
+    inset 0 0 40px rgba(255,215,0,.8);
+  animation: spin 6s linear infinite;
+}
+
+.portal-glow{
+  position:absolute; inset:-30%;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(255,215,0,.35) 0%, rgba(255,215,0,0) 60%);
+  filter: blur(8px);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes spin{ to{ transform:rotate(360deg); } }
+@keyframes pulse{
+  0%,100%{ transform:scale(1); opacity:.7; }
+  50%{ transform:scale(1.2); opacity:1; }
+}
+
+/* MENSAGEM */
+.mensagem{
+  display:none;
+  margin-top:14px;
+}
+.mensagem h2{
+  text-shadow:0 0 18px rgba(255,215,0,.9);
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="fx"></canvas>
+<div class="vignette"></div>
+
+<audio id="musica" loop>
+  <source src="ciganos.mp3" type="audio/mpeg">
+</audio>
+
+<div class="container">
+  <h1>PORTAL DO BARALHO CIGANO</h1>
+  <p>Acesso exclusivo para membros do Clube do Tarô</p>
+
+  <input id="nome" placeholder="Seu nome completo">
+  <input id="email" placeholder="Seu melhor email">
+
+  <button class="botao-ouro" onclick="ativar()">SOU OURO / DIAMANTE / ANUAL</button>
+
+  <a href="https://www.asaas.com/c/72mod50hzjnef58h" target="_blank">
+    <button class="botao-pagamento">SOU BRONZE / PRATA</button>
+  </a>
+
+  <div class="mensagem" id="msg">
+    <h2>BEM VINDO AO CURSO DE BARALHO CIGANO</h2>
+    <p>Parabéns! Em instantes você receberá o acesso no seu email.</p>
+  </div>
+</div>
+
+<div class="portal-wrap" id="portal">
+  <div class="portal-glow"></div>
+  <div class="portal-ring"></div>
+</div>
+
+<script>
+// ===== CANVAS: ESTRELAS + ESPIRAL DOURADA =====
+const c = document.getElementById('fx');
+const ctx = c.getContext('2d');
+
+function resize(){
+  c.width = innerWidth;
+  c.height = innerHeight;
+}
+resize();
+addEventListener('resize', resize);
+
+const stars = [];
+for(let i=0;i<160;i++){
+  stars.push({
+    x: Math.random()*c.width,
+    y: Math.random()*c.height,
+    r: Math.random()*1.6 + .3,
+    v: Math.random()*0.4 + .1
+  });
+}
+
+// partículas de espiral (centro)
+const spiral = [];
+for(let i=0;i<120;i++){
+  spiral.push({
+    a: Math.random()*Math.PI*2,
+    d: Math.random()*120,
+    v: 0.01 + Math.random()*0.02
+  });
+}
+
+function draw(){
+  // leve rastro
+  ctx.fillStyle = "rgba(0,0,0,0.25)";
+  ctx.fillRect(0,0,c.width,c.height);
+
+  // estrelas
+  ctx.fillStyle = "#fff";
+  stars.forEach(s=>{
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+    ctx.fill();
+    s.y += s.v;
+    if(s.y > c.height){ s.y = 0; s.x = Math.random()*c.width; }
+  });
+
+  // espiral dourada no centro
+  const cx = c.width/2;
+  const cy = c.height/2;
+
+  spiral.forEach(p=>{
+    p.a += p.v;
+    p.d += 0.15; // expande levemente
+    const x = cx + Math.cos(p.a) * p.d;
+    const y = cy + Math.sin(p.a) * p.d;
+
+    ctx.fillStyle = "rgba(255,215,0,0.9)";
+    ctx.beginPath();
+    ctx.arc(x,y,1.2,0,Math.PI*2);
+    ctx.fill();
+
+    if(p.d > 260){
+      p.d = 0;
+      p.a = Math.random()*Math.PI*2;
+    }
+  });
+
+  requestAnimationFrame(draw);
+}
+draw();
+
+// ===== AÇÃO =====
+function ativar(){
+  const nome = document.getElementById('nome').value.trim();
+  const email = document.getElementById('email').value.trim();
+
+  if(!nome || !email){
+    alert("Preencha nome e email");
+    return;
+  }
+
+  // áudio (mobile libera no clique)
+  const audio = document.getElementById('musica');
+  audio.volume = 0.25;
+  audio.play().catch(()=>{});
+
+  // envio para planilha
+  fetch("https://script.google.com/macros/s/AKfycbznKcdNZ6pji8ENBuQm5geoEFziLP5WWv5NeeX2OhNU3hUuKpqCaNfSClfzt8oDjqFp/exec", {
+    method:"POST",
+    body: JSON.stringify({nome,email})
+  });
+
+  // abre portal
+  document.getElementById('portal').classList.add('ativo');
+
+  // mostra mensagem
+  setTimeout(()=>{
+    document.getElementById('msg').style.display = 'block';
+  }, 1600);
+}
+</script>
+
+</body>
+</html>
