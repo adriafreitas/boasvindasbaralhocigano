@@ -66,18 +66,26 @@ input{
   font-size:16px;
 }
 
-/* BOTÕES */
-button{
-  width:92%;
-  max-width:360px;
-  padding:16px;
+/* PLANOS - UM EMBAIXO DO OUTRO */
+.planos{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
   margin:10px auto;
+  max-width:360px;
+}
+
+.planos button{
+  width:100%;
+  padding:16px;
   border-radius:32px;
   border:none;
   font-size:16px;
   cursor:pointer;
 }
 
+/* BOTÃO OURO */
 .botao-ouro{
   background:linear-gradient(145deg,#ffe08a,#caa33a);
   color:#000;
@@ -87,11 +95,15 @@ button{
 }
 .botao-ouro:hover{ transform:scale(1.04); }
 
+/* BOTÃO AZUL NEON (Bronze/Prata) */
 .botao-pagamento{
-  background:transparent;
-  color:#ffd86b;
-  border:1px solid #ffd86b;
+  background:linear-gradient(145deg, #00d4ff, #0099cc);
+  color:#000;
+  font-weight:bold;
+  box-shadow:0 0 22px rgba(0,212,255,.9), inset 0 0 10px rgba(255,255,255,.5);
+  transition:.25s;
 }
+.botao-pagamento:hover{ transform:scale(1.04); }
 
 /* PORTAL (anel + brilho) */
 .portal-wrap{
@@ -153,8 +165,8 @@ button{
 <canvas id="fx"></canvas>
 <div class="vignette"></div>
 
-<audio id="musica" loop>
-  <source src="ciganos.mp3" type="audio/mpeg">
+<audio id="musica" loop preload="auto">
+  <source src="cigarros.mp3" type="audio/mpeg">
 </audio>
 
 <div class="container">
@@ -164,11 +176,13 @@ button{
   <input id="nome" placeholder="Seu nome completo">
   <input id="email" placeholder="Seu melhor email">
 
-  <button class="botao-ouro" onclick="ativar()">SOU OURO / DIAMANTE / ANUAL</button>
+  <div class="planos">
+    <button class="botao-ouro" onclick="ativar()">SOU OURO / DIAMANTE / ANUAL</button>
 
-  <a href="https://www.asaas.com/c/72mod50hzjnef58h" target="_blank">
-    <button class="botao-pagamento">SOU BRONZE / PRATA</button>
-  </a>
+    <a href="https://www.asaas.com/c/72mod50hzjnef58h" target="_blank">
+      <button class="botao-pagamento">SOU BRONZE / PRATA</button>
+    </a>
+  </div>
 
   <div class="mensagem" id="msg">
     <h2>BEM VINDO AO CURSO DE BARALHO CIGANO</h2>
@@ -253,7 +267,7 @@ function draw(){
 }
 draw();
 
-// ===== AÇÃO =====
+// ===== AÇÃO PRINCIPAL =====
 function ativar(){
   const nome = document.getElementById('nome').value.trim();
   const email = document.getElementById('email').value.trim();
@@ -263,21 +277,26 @@ function ativar(){
     return;
   }
 
-  // áudio (mobile libera no clique)
+  // TOCA MÚSICA (com verificação extra)
   const audio = document.getElementById('musica');
   audio.volume = 0.25;
-  audio.play().catch(()=>{});
+  audio.load(); // recarrega áudio
+  audio.play().then(() => {
+    console.log('Música tocando!');
+  }).catch(e => {
+    console.log('Áudio bloqueado pelo navegador:', e);
+  }); 
 
-  // envio para planilha
+  // ENVIA PARA PLANILHA
   fetch("https://script.google.com/macros/s/AKfycbznKcdNZ6pji8ENBuQm5geoEFziLP5WWv5NeeX2OhNU3hUuKpqCaNfSClfzt8oDjqFp/exec", {
     method:"POST",
     body: JSON.stringify({nome,email})
   });
 
-  // abre portal
+  // ABRE PORTAL
   document.getElementById('portal').classList.add('ativo');
 
-  // mostra mensagem
+  // MOSTRA MENSAGEM
   setTimeout(()=>{
     document.getElementById('msg').style.display = 'block';
   }, 1600);
