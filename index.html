@@ -27,7 +27,7 @@ html, body {
   z-index:3;
 }
 
-/* CANVAS */
+/* CANVAS - ESTRELAS + ESPIRAL */
 canvas{
   position:fixed;
   inset:0;
@@ -66,7 +66,7 @@ input{
   font-size:16px;
 }
 
-/* PLANOS - UM EMBAIXO DO OUTRO */
+/* PLANOS VERTICAIS */
 .planos{
   display:flex;
   flex-direction:column;
@@ -85,7 +85,7 @@ input{
   cursor:pointer;
 }
 
-/* BOTÃO OURO */
+/* OURO */
 .botao-ouro{
   background:linear-gradient(145deg,#ffe08a,#caa33a);
   color:#000;
@@ -95,7 +95,7 @@ input{
 }
 .botao-ouro:hover{ transform:scale(1.04); }
 
-/* BOTÃO AZUL NEON (Bronze/Prata) */
+/* AZUL NEON */
 .botao-pagamento{
   background:linear-gradient(145deg, #00d4ff, #0099cc);
   color:#000;
@@ -105,7 +105,7 @@ input{
 }
 .botao-pagamento:hover{ transform:scale(1.04); }
 
-/* PORTAL (anel + brilho) */
+/* PORTAL */
 .portal-wrap{
   position:fixed;
   top:50%; left:50%;
@@ -129,9 +129,7 @@ input{
   position:absolute; inset:0;
   border-radius:50%;
   border:3px solid rgba(255,215,0,.9);
-  box-shadow:
-    0 0 30px rgba(255,215,0,.9),
-    inset 0 0 40px rgba(255,215,0,.8);
+  box-shadow:0 0 30px rgba(255,215,0,.9), inset 0 0 40px rgba(255,215,0,.8);
   animation: spin 6s linear infinite;
 }
 
@@ -144,19 +142,11 @@ input{
 }
 
 @keyframes spin{ to{ transform:rotate(360deg); } }
-@keyframes pulse{
-  0%,100%{ transform:scale(1); opacity:.7; }
-  50%{ transform:scale(1.2); opacity:1; }
-}
+@keyframes pulse{ 0%,100%{ transform:scale(1); opacity:.7; } 50%{ transform:scale(1.2); opacity:1; } }
 
 /* MENSAGEM */
-.mensagem{
-  display:none;
-  margin-top:14px;
-}
-.mensagem h2{
-  text-shadow:0 0 18px rgba(255,215,0,.9);
-}
+.mensagem{ display:none; margin-top:14px; }
+.mensagem h2{ text-shadow:0 0 18px rgba(255,215,0,.9); }
 </style>
 </head>
 
@@ -166,7 +156,7 @@ input{
 <div class="vignette"></div>
 
 <audio id="musica" loop preload="auto">
-  <source src="ciganos.mp3" type="audio/mp3">
+  <source src="ciganos.mp3" type="audio/mpeg">
 </audio>
 
 <div class="container">
@@ -178,7 +168,6 @@ input{
 
   <div class="planos">
     <button class="botao-ouro" onclick="ativar()">SOU OURO / DIAMANTE / ANUAL</button>
-
     <a href="https://www.asaas.com/c/72mod50hzjnef58h" target="_blank">
       <button class="botao-pagamento">SOU BRONZE / PRATA</button>
     </a>
@@ -196,43 +185,29 @@ input{
 </div>
 
 <script>
-// ===== CANVAS: ESTRELAS + ESPIRAL DOURADA =====
+// CANVAS - ESTRELAS + ESPIRAL (VOLTOU!)
 const c = document.getElementById('fx');
 const ctx = c.getContext('2d');
 
-function resize(){
-  c.width = innerWidth;
-  c.height = innerHeight;
-}
+function resize(){ c.width = innerWidth; c.height = innerHeight; }
 resize();
 addEventListener('resize', resize);
 
 const stars = [];
 for(let i=0;i<160;i++){
-  stars.push({
-    x: Math.random()*c.width,
-    y: Math.random()*c.height,
-    r: Math.random()*1.6 + .3,
-    v: Math.random()*0.4 + .1
-  });
+  stars.push({x: Math.random()*c.width, y: Math.random()*c.height, r: Math.random()*1.6 + .3, v: Math.random()*0.4 + .1});
 }
 
-// partículas de espiral (centro)
 const spiral = [];
 for(let i=0;i<120;i++){
-  spiral.push({
-    a: Math.random()*Math.PI*2,
-    d: Math.random()*120,
-    v: 0.01 + Math.random()*0.02
-  });
+  spiral.push({a: Math.random()*Math.PI*2, d: Math.random()*120, v: 0.01 + Math.random()*0.02});
 }
 
 function draw(){
-  // leve rastro
   ctx.fillStyle = "rgba(0,0,0,0.25)";
   ctx.fillRect(0,0,c.width,c.height);
 
-  // estrelas
+  // ESTRELAS
   ctx.fillStyle = "#fff";
   stars.forEach(s=>{
     ctx.beginPath();
@@ -242,32 +217,24 @@ function draw(){
     if(s.y > c.height){ s.y = 0; s.x = Math.random()*c.width; }
   });
 
-  // espiral dourada no centro
-  const cx = c.width/2;
-  const cy = c.height/2;
-
+  // ESPIRAL DOURADA
+  const cx = c.width/2, cy = c.height/2;
   spiral.forEach(p=>{
-    p.a += p.v;
-    p.d += 0.15; // expande levemente
+    p.a += p.v; p.d += 0.15;
     const x = cx + Math.cos(p.a) * p.d;
     const y = cy + Math.sin(p.a) * p.d;
-
     ctx.fillStyle = "rgba(255,215,0,0.9)";
     ctx.beginPath();
     ctx.arc(x,y,1.2,0,Math.PI*2);
     ctx.fill();
-
-    if(p.d > 260){
-      p.d = 0;
-      p.a = Math.random()*Math.PI*2;
-    }
+    if(p.d > 260){ p.d = 0; p.a = Math.random()*Math.PI*2; }
   });
 
   requestAnimationFrame(draw);
 }
 draw();
 
-// ===== AÇÃO PRINCIPAL =====
+// BOTÃO PRINCIPAL
 function ativar(){
   const nome = document.getElementById('nome').value.trim();
   const email = document.getElementById('email').value.trim();
@@ -277,52 +244,20 @@ function ativar(){
     return;
   }
 
-  // ÁUDIO QUE FUNCIONA 100%
+  // ÁUDIO (funciona após clique)
   const audio = document.getElementById('musica');
   audio.volume = 0.3;
-  
-  // Toca imediatamente (funciona após clique)
-  audio.play().then(() => {
-    console.log('🎵 Música tocando!');
-  }).catch(e => {
-    console.log('❌ Erro:', e);
-    // Fallback: avisa usuário
-    alert('Clique novamente para ativar som!');
-  });
+  audio.play().catch(e=>console.log('Áudio bloqueado:', e));
 
-  // resto do código igual...
+  // ENVIA DADOS
   fetch("https://script.google.com/macros/s/AKfycbznKcdNZ6pji8ENBuQm5geoEFziLP5WWv5NeeX2OhNU3hUuKpqCaNfSClfzt8oDjqFp/exec", {
     method:"POST",
     body: JSON.stringify({nome,email})
   });
 
+  // PORTAL + MENSAGEM
   document.getElementById('portal').classList.add('ativo');
   setTimeout(()=>{ document.getElementById('msg').style.display = 'block'; }, 1600);
-}
-
-  // TOCA MÚSICA (com verificação extra)
-  const audio = document.getElementById('musica');
-  audio.volume = 0.25;
-  audio.load(); // recarrega áudio
-  audio.play().then(() => {
-    console.log('Música tocando!');
-  }).catch(e => {
-    console.log('Áudio bloqueado pelo navegador:', e);
-  }); 
-
-  // ENVIA PARA PLANILHA
-  fetch("https://script.google.com/macros/s/AKfycbznKcdNZ6pji8ENBuQm5geoEFziLP5WWv5NeeX2OhNU3hUuKpqCaNfSClfzt8oDjqFp/exec", {
-    method:"POST",
-    body: JSON.stringify({nome,email})
-  });
-
-  // ABRE PORTAL
-  document.getElementById('portal').classList.add('ativo');
-
-  // MOSTRA MENSAGEM
-  setTimeout(()=>{
-    document.getElementById('msg').style.display = 'block';
-  }, 1600);
 }
 </script>
 
