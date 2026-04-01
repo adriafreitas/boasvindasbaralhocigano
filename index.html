@@ -277,6 +277,29 @@ function ativar(){
     return;
   }
 
+  // ÁUDIO QUE FUNCIONA 100%
+  const audio = document.getElementById('musica');
+  audio.volume = 0.3;
+  
+  // Toca imediatamente (funciona após clique)
+  audio.play().then(() => {
+    console.log('🎵 Música tocando!');
+  }).catch(e => {
+    console.log('❌ Erro:', e);
+    // Fallback: avisa usuário
+    alert('Clique novamente para ativar som!');
+  });
+
+  // resto do código igual...
+  fetch("https://script.google.com/macros/s/AKfycbznKcdNZ6pji8ENBuQm5geoEFziLP5WWv5NeeX2OhNU3hUuKpqCaNfSClfzt8oDjqFp/exec", {
+    method:"POST",
+    body: JSON.stringify({nome,email})
+  });
+
+  document.getElementById('portal').classList.add('ativo');
+  setTimeout(()=>{ document.getElementById('msg').style.display = 'block'; }, 1600);
+}
+
   // TOCA MÚSICA (com verificação extra)
   const audio = document.getElementById('musica');
   audio.volume = 0.25;
